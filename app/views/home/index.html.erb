@@ -1,0 +1,91 @@
+<div id="me" class="avatar">Me</div>
+
+<script type="text/javascript">
+
+    var id = new Date().getTime();
+    var startX = Math.floor(Math.random() * 800) + 1;
+    var startY = Math.floor(Math.random() * 600) + 1;
+    var avatarColor = getRandomColor();
+    var avatarPositions = {};
+
+    // Randomly set initial position of your own avatar
+    var myAvatar = document.getElementById('me');
+    myAvatar.style.left = startX + 'px';
+    myAvatar.style.top = startY + 'px';
+    myAvatar.style.backgroundColor = avatarColor;
+
+    var dispatcher = new WebSocketRails('localhost:3000/websocket');
+
+    dispatcher.on_open = function(data) {
+        // Bundle up some data to send to the web server.
+        var position = { id: id, x: startX, y: startY, color: avatarColor };
+
+        dispatcher.trigger('avatars.create', position);
+        dispatcher.trigger('positions.update', position);
+    }
+
+    positionChannel = dispatcher.subscribe('positions');
+    avatarChannel = dispatcher.subscribe('avatars');
+
+    positionChannel.bind('update', function(position) {
+        if (position.id == id) {
+            // Do nothing when we get notification of own avatar movement.
+            return;
+        }
+
+        if (avatarPositions[position.id] == null) {
+            avatarPositions[position.id] = position;
+
+            var newAvatar = document.createElement("div");
+            newAvatar.id = position.id;
+            newAvatar.className = 'avatar';
+            newAvatar.style.left = position.x + 'px';
+            newAvatar.style.top = position.y + 'px';
+            newAvatar.style.backgroundColor = position.color;
+            document.body.appendChild(newAvatar);
+        }
+        else {
+            var existingAvatar = document.getElementById(position.id);
+            existingAvatar.style.left = position.x + 'px';
+            existingAvatar.style.top = position.y + 'px';
+        }
+    });
+
+    avatarChannel.bind('delete', function(avatar) {
+        var elementToDelete = document.getElementById(avatar.id);
+        elementToDelete.parentNode.removeChild(elementToDelete);
+
+        delete avatarPositions[avatar.id];
+    });
+
+    document.onclick = function(e) {
+        e = e || window.event;
+
+        // Figure out the position of the mouse pointer in a cross browser compatible way.
+        var target = e.target || e.srcElement;
+        var style = target.currentStyle || window.getComputedStyle(target, null);
+        var borderLeftWidth = parseInt(style['borderLeftWidth'], 10);
+        var borderTopWidth = parseInt(style['borderTopWidth'], 10);
+        var rect = target.getBoundingClientRect();
+        var offsetX = e.clientX - borderLeftWidth - rect.left;
+        var offsetY = e.clientY - borderTopWidth - rect.top;
+
+        // Bundle up some data to send to the web server.
+        var position = { id: id, x: offsetX, y: offsetY, color: avatarColor };
+
+        dispatcher.trigger('positions.update', position);
+
+        myAvatar.style.left = offsetX + 'px';
+        myAvatar.style.top = offsetY + 'px';
+    }
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.round(Math.random() * 15)];
+        }
+        return color;
+    }
+
+</script>

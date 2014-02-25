@@ -16,7 +16,7 @@ which will then transmit that position to all other players. There isn't much to
 by clicking on different places on the screen. If you were to combine this with some of the 3D game concepts you've
 been working on, you could build a pretty interesting 3D world that multiple players could exist in at the same time.
 
-(The Demo)[http://madisonpdx-websockets.herokuapp.com/]
+[The Demo](http://madisonpdx-websockets.herokuapp.com/)
 
 Hint: If you are viewing this demo when no one else is connected you can open the site in multiple browser windows
 and switch back and forth to simulate multiple players.

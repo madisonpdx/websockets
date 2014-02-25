@@ -14,7 +14,7 @@
     myAvatar.style.top = startY + 'px';
     myAvatar.style.backgroundColor = avatarColor;
 
-    var dispatcher = new WebSocketRails('/websocket');
+    var dispatcher = new WebSocketRails('madisonpdx-websockets.herokuapp.com//websocket');
 
     dispatcher.on_open = function(data) {
         // Bundle up some data to send to the web server.
